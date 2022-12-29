@@ -101,25 +101,33 @@ class BeyondHDScrape:
         else:
             return None
 
-    def parse_nfo(self, bhdstudio: bool = False):
-        """Parses URL for NFO"""
-        get_nfo = re.search(
-            r'(?s)id="nfo".*>(.+)</textarea>', str(self.bhd_session), re.MULTILINE
-        )
+    def parse_nfo(self, bhdstudio: bool = False, text_only: bool = False):
+        """
+        Parse NFO
+
+        :param bhdstudio: If set to True and bhdstudio is in URL, return a dictionary for BHDStudio.
+        :param text_only: If set to True, then only return all the text from the NFO.
+        """
+        get_nfo = re.search(r"(?s)forced-nfo(.+?)</tbody>", str(self.bhd_session))
         if get_nfo:
-            if bhdstudio:
+            if bhdstudio and "bhdstudio" in str(self.url).lower():
                 self.nfo = {"bhdstudio_nfo_parsed": parse_bhdstudio_nfo(get_nfo)}
             else:
-                self.nfo = unescape(get_nfo.group(1))
+                if text_only:
+                    self.nfo = bs4.BeautifulSoup(
+                        get_nfo.group(1).replace("<br/>", "\n"), "html.parser"
+                    ).text
+                else:
+                    self.nfo = unescape(get_nfo.group(1).replace("<br/>", "\n"))
         else:
             self.nfo = None
 
 
 if __name__ == "__main__":
     test = BeyondHDScrape(
-        url="https://beyond-hd.me/torrents/stan-ollie-2018-bluray-1080p-dd51-x264-bhdstudio.232368"
+        url="https://beyond-hd.me/torrents/metropolis-2001-proper-bluray-1080p-dts-hd-ma-51-avc-remux-framestor.232582"
     )
     test.parse_media_info()
-    test.parse_nfo()
-    # print(test.nfo)
+    test.parse_nfo(bhdstudio=True, text_only=True)
+    print(test.nfo)
     # print(test.media_info)
