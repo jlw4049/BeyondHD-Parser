@@ -66,14 +66,36 @@ def parse_bhdstudio_nfo(get_nfo: re):
     if release_notes:
         bhdstudio_dict.update({"release_notes": release_notes.group(1).rstrip()})
 
-    # get all images
-    images = re.findall(r'="(http.+?)"', parse_nfo)
-    if images:
-        bhdstudio_dict.update(
-            {
-                "medium_linked_images": [x for x in images if "md" in x],
-                "full_resolution_images": [x for x in images if "md" not in x],
-            }
+    # get only the image section
+    image_section = re.search(
+        r"(?s)ENCODE.*\[/color](.*)\[/center].*GREETZ", parse_nfo, flags=re.MULTILINE
+    )
+
+    # if images are detected
+    if image_section:
+
+        # find full resolution images and update the dictionary
+        full_res_images = re.findall(
+            r"url=(http.+?)]\[img]", str(image_section.group(1)), flags=re.MULTILINE
         )
+        if full_res_images:
+            bhdstudio_dict.update(
+                {
+                    "full_resolution_images": [
+                        x for x in full_res_images if "md" not in x
+                    ],
+                }
+            )
+
+        # find medium linked images and update the dictionary
+        medium_linked_images = re.findall(
+            r"\[img](http.+?)\[/img]\[/url]",
+            str(image_section.group(1)),
+            flags=re.MULTILINE,
+        )
+        if medium_linked_images:
+            bhdstudio_dict.update(
+                {"medium_linked_images": [x for x in medium_linked_images if "md" in x]}
+            )
 
     return bhdstudio_dict
