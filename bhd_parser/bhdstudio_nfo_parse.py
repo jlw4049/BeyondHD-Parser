@@ -1,4 +1,5 @@
 import re
+from html import unescape
 
 
 def parse_bhdstudio_nfo(get_nfo: re):
@@ -12,7 +13,7 @@ def parse_bhdstudio_nfo(get_nfo: re):
     bhdstudio_dict = {}
 
     # convert line breaks to newlines
-    parse_nfo = str(get_nfo.group(1)).replace("<br/>", "\n").replace("\r", "")
+    parse_nfo = unescape(str(get_nfo.group(1)).replace("<br/>", "\n"))
 
     # get source
     get_source = re.search(r"Source\s+:\s(.+)\n", parse_nfo)
@@ -24,37 +25,37 @@ def parse_bhdstudio_nfo(get_nfo: re):
     # get chapters
     get_chapters = re.search(r"Chapters\s+:\s(.+)\n", parse_nfo)
     if get_chapters:
-        bhdstudio_dict.update({"chapters": get_chapters.group(1)})
+        bhdstudio_dict.update({"chapters": get_chapters.group(1).rstrip()})
 
     # get file size
     get_file_size = re.search(r"File\sSize\s+:\s(.+)\n", parse_nfo)
     if get_file_size:
-        bhdstudio_dict.update({"file_size": get_file_size.group(1)})
+        bhdstudio_dict.update({"file_size": get_file_size.group(1).rstrip()})
 
     # get duration
     get_duration = re.search(r"Duration\s+:\s(.+)\n", parse_nfo)
     if get_duration:
-        bhdstudio_dict.update({"duration": get_duration.group(1)})
+        bhdstudio_dict.update({"duration": get_duration.group(1).rstrip()})
 
     # get video
     get_video_info = re.search(r"Video\s+:\s(.+)\n", parse_nfo)
     if get_video_info:
-        bhdstudio_dict.update({"video_info": get_video_info.group(1)})
+        bhdstudio_dict.update({"video_info": get_video_info.group(1).rstrip()})
 
     # get resolution
     get_resolution = re.search(r"Resolution\s+:\s(.+)\n", parse_nfo)
     if get_resolution:
-        bhdstudio_dict.update({"resolution": get_resolution.group(1)})
+        bhdstudio_dict.update({"resolution": get_resolution.group(1).rstrip()})
 
     # get audio
     get_audio = re.search(r"Audio\s+:\s(.+)\n", parse_nfo)
     if get_audio:
-        bhdstudio_dict.update({"audio_info": get_audio.group(1)})
+        bhdstudio_dict.update({"audio_info": get_audio.group(1).rstrip()})
 
     # get encoded_by
     get_encoded_by = re.search(r'Encoder\s+:\s.+">(.+)</.+\n', parse_nfo)
     if get_encoded_by:
-        bhdstudio_dict.update({"encoder": get_encoded_by.group(1)})
+        bhdstudio_dict.update({"encoder": get_encoded_by.group(1).rstrip()})
 
     # get release notes
     release_notes = re.search(
@@ -63,7 +64,7 @@ def parse_bhdstudio_nfo(get_nfo: re):
         re.MULTILINE,
     )
     if release_notes:
-        bhdstudio_dict.update({"release_notes": release_notes.group(1)})
+        bhdstudio_dict.update({"release_notes": release_notes.group(1).rstrip()})
 
     # get all images
     images = re.findall(r'="(http.+?)"', parse_nfo)
