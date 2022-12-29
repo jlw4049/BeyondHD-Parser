@@ -1,0 +1,1 @@
+- Add ability to import cookie key extracted from Chrome/Firefox
