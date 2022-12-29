@@ -1,8 +1,10 @@
-import requests
-import bs4
 import re
-from typing import TextIO
 from html import unescape
+
+import browser_cookie3
+import bs4
+import requests
+
 from bhdstudio_nfo_parse import parse_bhdstudio_nfo
 
 
@@ -16,33 +18,81 @@ class BeyondHDScrape:
         url: str,
         cookie_key: str = None,
         cookie_value: str = None,
+        auto_cookie_detection: bool = True,
         timeout: int = 60,
     ):
+        """
+        Used to scrape BeyondHD for torrent information
 
+        :param url: URL to torrent.
+        :param cookie_key: Beyond-hd.me cookie key (starts with remember_).
+        :param cookie_value: Beyond-hd.me cookie value (value after remember_... key).
+        :param auto_cookie_detection: Will utilize browser_cookie3 to automatically detect beyond-hd cookies from
+        chrome, chromium, opera, brave, edge, vivaldi, firefox and safari browsers. If the user leaves this equal to
+        True, but also provides a cookie_key/value then we will not attempt to automatically load the cookies.
+        :param timeout: Set requests timeout, default is 60 seconds.
+        """
+
+        # variables
         self.url = url
         self.cookie_key = cookie_key
         self.cookie_value = cookie_value
+        self.auto_cookie_detection = auto_cookie_detection
+        self.cookie_jar = None
         self.timeout = timeout
         self.bhd_session = None
-
         self.media_info = None
         self.nfo = None
 
-        if not self.cookie_key or not self.cookie_value:
-            raise BeyondHDCookieError("You must provide the cookie value and key")
-        else:
+        # get cookies ready
+        self._handle_cookies()
+        if self.cookie_jar:
             self._start_session()
+        else:
+            raise BeyondHDCookieError(
+                "Missing cookies, login into BeyondHD with any supported browsers or "
+                "provide cookie_key/value"
+            )
+
+    def _handle_cookies(self):
+        """
+        This handles our cookie input.
+        If auto_cookie_detection=True then we will attempt to automatically load cookies.
+        If the user defines cookie_key AND cookie_value then we will ignore auto_cookie_detection=True.
+        Then we will update self.cookie_jar variable with which ever cookies.
+        """
+        if not self.auto_cookie_detection:
+            if not self.cookie_key or not self.cookie_value:
+                raise BeyondHDCookieError(
+                    "You must provide the cookie value and key or re-enable"
+                    "'auto_cookie_detection=True'"
+                )
+            else:
+                self.cookie_jar = {self.cookie_key: self.cookie_value}
+
+        elif self.auto_cookie_detection:
+            if self.cookie_key and self.cookie_value:
+                self.cookie_jar = {self.cookie_key: self.cookie_value}
+            else:
+                self.cookie_jar = browser_cookie3.load(domain_name="beyond-hd")
 
     def _start_session(self):
+        """Utilizes requests to parse the input url while converting the output with BeautifulSoup"""
         session = requests.session()
-        session_results = session.get(
-            url=self.url,
-            cookies={self.cookie_key: self.cookie_value},
-            timeout=self.timeout,
-        )
-        self.bhd_session = bs4.BeautifulSoup(session_results.text, "html.parser")
+        try:
+            session_results = session.get(
+                url=self.url,
+                cookies=self.cookie_jar,
+                timeout=self.timeout,
+            )
+            self.bhd_session = bs4.BeautifulSoup(session_results.text, "html.parser")
+        except requests.exceptions.ConnectionError:
+            raise ConnectionError(
+                "There was a connection error when attempting to connect to beyond-hd"
+            )
 
     def parse_media_info(self):
+        """Parses URL for MediaInfo"""
         get_mediainfo = re.search(
             r"(?s)<code>General(.+)</code></pre>", str(self.bhd_session), re.MULTILINE
         )
@@ -52,11 +102,10 @@ class BeyondHDScrape:
             return None
 
     def parse_nfo(self, bhdstudio: bool = False):
-        # print(self.bhd_session)
+        """Parses URL for NFO"""
         get_nfo = re.search(
             r'(?s)id="nfo".*>(.+)</textarea>', str(self.bhd_session), re.MULTILINE
         )
-        # print(get_nfo.group(1))
         if get_nfo:
             if bhdstudio:
                 self.nfo = {"bhdstudio_nfo_parsed": parse_bhdstudio_nfo(get_nfo)}
@@ -67,13 +116,10 @@ class BeyondHDScrape:
 
 
 if __name__ == "__main__":
-    import keys
-
     test = BeyondHDScrape(
-        url="https://beyond-hd.me/torrents/stan-ollie-2018-bluray-1080p-dd51-x264-bhdstudio.232368",
-        cookie_key=keys.cookie_key,
-        cookie_value=keys.cookie_value,
+        url="https://beyond-hd.me/torrents/stan-ollie-2018-bluray-1080p-dd51-x264-bhdstudio.232368"
     )
     test.parse_media_info()
-    # test.parse_nfo(bhdstudio=False)
-    print(test.media_info)
+    test.parse_nfo()
+    # print(test.nfo)
+    # print(test.media_info)
