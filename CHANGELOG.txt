@@ -1,0 +1,8 @@
+Change Log
+==========
+
+1.0.0 (12/29/2022)
+-------------------
+- Add support to parse Beyond-hd via the built-in API
+- Add support to scrape Beyond-hd with user cookies for direct torrent information:
+    - You can extract the MediaInfo and NFO/Description
