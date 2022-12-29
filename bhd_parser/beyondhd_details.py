@@ -59,10 +59,11 @@ class BeyondHDScrape:
 
 
 if __name__ == '__main__':
+    import keys
     test = BeyondHDScrape(
-        url="https://beyond-hd.me/torrents/the-butterfly-effect-2004-directors-cut-bluray-1080p-dd51-x264-bhdstudio.232396",
-        cookie_key="remember_web_xxxx",
-        cookie_value="")
+        url="https://beyond-hd.me/torrents/stan-ollie-2018-bluray-1080p-dd51-x264-bhdstudio.232368",
+        cookie_key=keys.cookie_key,
+        cookie_value=keys.cookie_value)
     test.parse_media_info()
     test.parse_nfo(bhdstudio=True)
     print(test.nfo)
