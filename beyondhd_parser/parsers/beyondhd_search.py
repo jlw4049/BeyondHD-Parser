@@ -134,9 +134,8 @@ class BeyondHDAPI:
 
 
 if __name__ == "__main__":
-    import keys
     try:
-        search_beyondhd = BeyondHDAPI(api_key=keys.api_key)
+        search_beyondhd = BeyondHDAPI(api_key="NEED KEY")
         search_beyondhd.search(title="Gone In 60 Seconds")
 
         if search_beyondhd.success:
