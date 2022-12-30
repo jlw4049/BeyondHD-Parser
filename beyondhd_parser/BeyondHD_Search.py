@@ -1,7 +1,7 @@
 import argparse
 import sys
 
-from bhd_parser.beyondhd_search import BeyondHDAPI
+from parsers.beyondhd_search import BeyondHDAPI
 
 
 def get_args():
