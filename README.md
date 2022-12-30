@@ -1,5 +1,5 @@
 # BeyondHD-Parser
 
-WIP
+pip install BeyondHD-Parser
 
 ```
