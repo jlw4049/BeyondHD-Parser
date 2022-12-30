@@ -1,121 +1,153 @@
-import argparse
-import sys
-
-from parsers.beyondhd_search import BeyondHDAPI
+import requests
 
 
-def get_args():
-    parser = argparse.ArgumentParser()
+class ApiKeyError(Exception):
+    """Custom exception for ApiKeyError"""
 
-    # search args
-    parser.add_argument(
-        "-a",
-        "--api_key",
-        help="BeyondHD API Key",
-    )
-
-    parser.add_argument(
-        "-t",
-        "--title",
-        help="Movie/Tv Show - e.g. The Matrix 1999",
-    )
-
-    parser.add_argument(
-        "-g",
-        "--filter_group",
-        default=None,
-        help="Release group in the format of 'BHDStudio', 'FraMeSToR'",
-    )
-
-    parser.add_argument(
-        "-r",
-        "--resolution",
-        default=None,
-        help="Filter by resolution in the format of '720p', '1080p'",
-    )
-
-    parser.add_argument(
-        "-x",
-        "--time_out",
-        default=60,
-        help="Time out in seconds, default is 60",
-    )
-
-    parser.add_argument(
-        "-f",
-        "--format",
-        default="dict",
-        choices=("dict", "list", "string", "string_w_link"),
-        help="Format to return results in",
-    )
-
-    # parse args
-    return vars(parser.parse_args())
+    pass
 
 
-def _format_search_results(info, results_format: str = "dict"):
-    if results_format == "dict":
-        print(info)
-    elif results_format == "list":
-        new_list = []
-        for x in list(info.keys()):
-            new_list.append((x, info[x]["url"]))
-        print(new_list)
-    elif results_format == "string":
-        for x in list(info.keys()):
-            print(x)
-    elif results_format == "string_w_link":
-        first_new_line = ""
-        for x in list(info.keys()):
-            print(first_new_line + str(x) + "\nlink: " + str(info[x]["url"]))
-            first_new_line = "\n"
+class BhdApiError(Exception):
+    """All generic BHD errors"""
+
+    pass
 
 
-def _search_error(x):
-    print(x + "\nYou must pass API key with '-a' and title with '-t'")
-    input()
-    exit()
+class BeyondHDAPI:
+    def __init__(self, api_key: str):
+        """
+        Search BeyondHD for torrents and return 100 results at a time.
+
+        :param api_key: API key from BeyondHD.
+        """
+
+        # variables
+        self.api_key = api_key
+        self.title = None
+        self.release_group = None
+        self.page = None
+        self.resolution = None
+        self.search_timeout = None
+        self.run_check = None
+        self.payload = None
+        self.success = None
+
+    def search(
+        self,
+        title: str,
+        release_group: str = None,
+        page: int = 0,
+        resolution: str = None,
+        search_timeout: int = 60,
+    ):
+        """
+        Searches BeyondHD via the search API
+
+        :param title: Title of the movie to check.
+        :param release_group: Release group in the format of BHDStudio, FraMeSToR, SacReD, is case sensitive.
+        :param page: This returns 100 results by default, if for some reason there is more send a page number.
+        :param resolution: Filters results by resolution, 720p... If left as None then it will return all results.
+        :param search_timeout: Default is 60, can adjust this in seconds
+        """
+
+        # update variables
+        self.title = title
+        self.release_group = release_group
+        self.page = page
+        self.resolution = resolution
+        self.search_timeout = search_timeout
+
+        # base payload
+        self.payload = {
+            "action": "search",
+            "search": title,
+        }
+
+        # if a page is specified add it to the payload
+        if self.page >= 1:
+            self.payload.update({"page": int(page)})
+
+        # if a group is specified add it to the payload
+        if self.release_group:
+            self.payload.update({"groups": self.release_group})
+
+        try:
+            self.run_check = requests.post(
+                "https://beyond-hd.me/api/torrents/" + self.api_key,
+                params=self.payload,
+                timeout=self.search_timeout,
+            )
+
+            # if post returns a False when connecting
+            if not self.run_check.ok:
+                raise ApiKeyError(
+                    "BeyondHD connection failed, likely due to API key error"
+                )
+
+            # if post returns True when connecting
+            elif self.run_check.ok:
+                # if post is successful get the torrents
+                if self.run_check.json()["success"]:
+                    self.success = True
+
+                # if post is not successful
+                else:
+                    # if site returns invalid api key
+                    if (
+                        "invalid api key:"
+                        in str(self.run_check.json()["status_message"]).lower()
+                    ):
+                        raise ApiKeyError("Invalid API Key")
+                    # for all other errors directly post the status message from the site
+                    else:
+                        raise ApiKeyError(str(self.run_check.json()["status_message"]))
+
+        # if there is some sort of connection error
+        except requests.exceptions.ConnectionError:
+            raise ConnectionError(
+                "There was a connection error when attempting to connect to beyond-hd"
+            )
+
+    def get_results(self):
+        """
+        Used to get the results of the search
+
+        :return: List with a dictionary in it of the first 100 results.
+        """
+        # release dict
+        release_dict = {}
+
+        # if all 3 checks are successful, return all results in a list.
+        if (
+            self.run_check.ok
+            and self.run_check.json()["status_code"]
+            and self.run_check.json()["success"]
+        ):
+            for x in self.run_check.json()["results"]:
+                if self.resolution:
+                    if self.resolution in str(x):
+                        release_dict.update({x["name"]: x})
+                elif not self.resolution:
+                    release_dict.update({x["name"]: x})
+
+        return release_dict
 
 
 if __name__ == "__main__":
-    # keep prompt over if double-clicked or script is utilized with no args
     try:
-        sys.argv[1]
-    except IndexError:
-        print("This is a command line program. Run this from a terminal.")
-        print("You can use '-h' to get parameter arguments")
-        input()
-        exit()
+        search_beyondhd = BeyondHDAPI(api_key="NEED KEY")
+        search_beyondhd.search(title="Gone In 60 Seconds")
 
-    # parse arguments
-    parse_args = get_args()
+        if search_beyondhd.success:
+            print("Do something with results:\n" + str(search_beyondhd.get_results()))
+        elif not search_beyondhd.success:
+            print("No results")
 
-    # handle args
-    if not parse_args["api_key"]:
-        _search_error("Missing API Key")
-    if not parse_args["title"]:
-        _search_error("Missing title")
+    except ConnectionError:
+        print("Connection Error!")
 
-    # start BeyondHDAPI instance
-    search_torrent = BeyondHDAPI(api_key=parse_args["api_key"])
+    except ApiKeyError:
+        print("Invalid API Key")
 
-    # create args
-    search_args = {"title": parse_args["title"]}
-    if parse_args["filter_group"]:
-        search_args.update({"release_group": parse_args["filter_group"]})
-
-    if parse_args["resolution"]:
-        search_args.update({"resolution": parse_args["resolution"]})
-
-    if parse_args["time_out"]:
-        search_args.update({"search_timeout": parse_args["time_out"]})
-
-    # search
-    search_torrent.search(**search_args)
-
-    # handle output
-    if search_torrent.success:
-        format_search_args = {"info": search_torrent.get_results()}
-        if parse_args["format"]:
-            format_search_args.update({"results_format": parse_args["format"]})
-        _format_search_results(**format_search_args)
+    except BhdApiError as bhd_error:
+        print(str(bhd_error))
