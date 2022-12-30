@@ -1,7 +1,6 @@
 import os
 
-from setuptools import setup, find_packages
-
+from setuptools import setup
 
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -18,7 +17,7 @@ with open(os.path.join(os.path.dirname(__file__), "README.md")) as fd:
 
 setup(
     name="BeyondHD-Parser",
-    version="1.0.4",
+    version="1.0.5",
     description="Tool to search/scrape BeyondHD for torrent information",
     long_description=ext_long_desc,
     long_description_content_type="text/markdown",
@@ -28,6 +27,6 @@ setup(
     license="MIT",
     classifiers=classifiers,
     keywords="BeyondHD-Parser",
-    packages=find_packages(),
+    packages=["beyondhd_parser"],
     install_requires=["beautifulsoup4", "browser-cookie3", "requests"],
 )
