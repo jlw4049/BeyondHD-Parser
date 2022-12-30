@@ -22,3 +22,7 @@ Change Log
 1.0.4 (12/29/2022)
 -------------------
 - Update README
+
+1.0.5 (12/30/2022)
+-------------------
+- Update structure of project
