@@ -61,7 +61,7 @@ BeyondHDApi() only accepts URL, the .search() method is where all the magic happ
 ## Example of how scrape BeyondHD
 
 ```python
-from beyondhd_parser.parsers.beyondhd_details import BeyondHDScrape
+from beyondhd_parser.beyondhd_details import BeyondHDScrape
 
 scrape_bhd = BeyondHDScrape(
     url="URL"
@@ -83,3 +83,8 @@ print(scrape_bhd.media_info)
 *chrome, chromium, opera, brave, edge, vivaldi, firefox and safari*
 
 `timeout` You can adjust the timeout time, default is 60 (seconds)
+
+## BeyondHDScrape's .parse_nfo() parameters
+`bhdstudio` True or False, default is False. You can parse BHDStudio NFO's into a python dictionary
+
+`text_only` True or False, default is False. You can strip away anything that isn't text in the NFO output
