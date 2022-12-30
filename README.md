@@ -13,10 +13,10 @@ This package includes a way to utilize BeyondHD's search API as well as parse UR
 ## Example of how to use search API
 
 ```python
-from beyondhd_parser.parsers.beyondhd_search import BeyondHDAPI, BhdApiError, ApiKeyError
+from beyondhd_parser.beyondhd_search import BeyondHDAPI, BhdApiError, ApiKeyError
 
 # basic ##########################
-search_beyondhd = BeyondHDAPI(api_key="NEED KEY")
+search_beyondhd = BeyondHDAPI(api_key="NEED KEY", rss_key="OPTIONAL KEY")
 search_beyondhd.search(title="Gone In 60 Seconds")
 
 if search_beyondhd.success:

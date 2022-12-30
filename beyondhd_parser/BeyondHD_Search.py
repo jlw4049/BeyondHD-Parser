@@ -14,15 +14,18 @@ class BhdApiError(Exception):
 
 
 class BeyondHDAPI:
-    def __init__(self, api_key: str):
+    def __init__(self, api_key: str,
+                 rss_key: str = None):
         """
         Search BeyondHD for torrents and return 100 results at a time.
 
         :param api_key: API key from BeyondHD.
+        :param rss_key: RSS key from BeyondHD.
         """
 
         # variables
         self.api_key = api_key
+        self.rss_key = rss_key
         self.title = None
         self.release_group = None
         self.page = None
@@ -62,6 +65,10 @@ class BeyondHDAPI:
             "action": "search",
             "search": title,
         }
+
+        # if user provides RSS key add it to the payload
+        if self.rss_key:
+            self.payload.update({"rsskey": self.rss_key})
 
         # if a page is specified add it to the payload
         if self.page >= 1:
@@ -135,7 +142,8 @@ class BeyondHDAPI:
 
 if __name__ == "__main__":
     try:
-        search_beyondhd = BeyondHDAPI(api_key="NEED KEY")
+        search_beyondhd = BeyondHDAPI(api_key="KEY",
+                                      rss_key="KEY")
         search_beyondhd.search(title="Gone In 60 Seconds")
 
         if search_beyondhd.success:

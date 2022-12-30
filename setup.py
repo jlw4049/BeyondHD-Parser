@@ -17,7 +17,7 @@ with open(os.path.join(os.path.dirname(__file__), "README.md")) as fd:
 
 setup(
     name="BeyondHD-Parser",
-    version="1.0.5",
+    version="1.0.6",
     description="Tool to search/scrape BeyondHD for torrent information",
     long_description=ext_long_desc,
     long_description_content_type="text/markdown",

@@ -26,3 +26,7 @@ Change Log
 1.0.5 (12/30/2022)
 -------------------
 - Update structure of project
+
+1.0.6 (12/30/2022)
+-------------------
+- Add RSS key param to search
