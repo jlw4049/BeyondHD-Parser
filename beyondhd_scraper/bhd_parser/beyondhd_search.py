@@ -134,12 +134,13 @@ class BeyondHDAPI:
 
 
 if __name__ == "__main__":
+    import keys
     try:
-        search_beyondhd = BeyondHDAPI(api_key="API KEY HERE")
+        search_beyondhd = BeyondHDAPI(api_key=keys.api_key)
         search_beyondhd.search(title="Gone In 60 Seconds")
 
         if search_beyondhd.success:
-            print("Do something with results:\n" + str(search_beyondhd))
+            print("Do something with results:\n" + str(search_beyondhd.get_results()))
         elif not search_beyondhd.success:
             print("No results")
 

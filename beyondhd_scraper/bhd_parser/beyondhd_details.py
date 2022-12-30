@@ -5,7 +5,7 @@ import browser_cookie3
 import bs4
 import requests
 
-from bhdstudio_nfo_parse import parse_bhdstudio_nfo
+from .bhdstudio_nfo_parse import parse_bhdstudio_nfo
 
 
 class BeyondHDCookieError(Exception):
@@ -125,9 +125,9 @@ class BeyondHDScrape:
 
 if __name__ == "__main__":
     test = BeyondHDScrape(
-        url="https://beyond-hd.me/torrents/metropolis-2001-proper-bluray-1080p-dts-hd-ma-51-avc-remux-framestor.232582"
+        url="https://beyond-hd.me/torrents/a-young-doctors-notebook-aka-a-young-doctors-notebook-other-stories-s02-720p-bluray-dts-51-x264-don.232647"
     )
     test.parse_media_info()
-    test.parse_nfo(bhdstudio=True, text_only=True)
+    test.parse_nfo(bhdstudio=True, text_only=False)
     print(test.nfo)
-    # print(test.media_info)
+    print(test.media_info)
