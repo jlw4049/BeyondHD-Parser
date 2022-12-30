@@ -45,6 +45,19 @@ except BhdApiError as bhd_error:
     print(str(bhd_error))
 ```
 
+## BeyondHDApi's .search() parameters
+BeyondHDApi() only accepts URL, the .search() method is where all the magic happens
+
+`title` Required, title to search for in the format of *The Matrix 1999*
+
+`release_group` Optional, specify groups *BHDStudio, FraMeSToR, SacReD*
+
+`page` Optional, allows you to select which page *int e.g. 0, 1, 2*
+
+`resolution` Optional, can filter resolutions *720p, 1080p, etc*
+
+`search_timeout` You can adjust the timeout time, default is 60 (seconds)
+
 ## Example of how scrape BeyondHD
 
 ```python
@@ -59,4 +72,14 @@ print(scrape_bhd.nfo)
 print(scrape_bhd.media_info)
 
 ```
+## BeyondHDScrape() parameters
+`url` Required, url to the torrent to parse
 
+`cookie_key` Optional, but if you do not provide the key/value you must have logged in prior in a supported browser
+
+`cookie_value` Optional, but if you do not provide the key/value you must have logged in prior in a supported browser
+
+`auto_cookie_detection` Default is True, manual cookie input does override this. If you've logged into BeyondHD in any of the supported browsers, this will automatically inject your cookie.\
+*chrome, chromium, opera, brave, edge, vivaldi, firefox and safari*
+
+`timeout` You can adjust the timeout time, default is 60 (seconds)
